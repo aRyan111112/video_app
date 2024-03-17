@@ -1,0 +1,14 @@
+{
+  "name": "video_app",
+  "version": "1.0.0",
+  "description": "watch videos here",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "js"
+  ],
+  "author": "aryan",
+  "license": "ISC"
+}
