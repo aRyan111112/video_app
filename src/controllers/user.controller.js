@@ -55,8 +55,10 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User already exists.")
     }
 
+    console.log("works till here")
+
     const avatarLocalPath = await req.files?.avatar[0]?.path;
-    console.log("path is:", avatarLocalPath)
+    console.log("avatarLocalPath : ", avatarLocalPath)
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar is required par file to h")
