@@ -43,6 +43,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
     }
 
     const thumbnailLocalPath = await req.files?.thumbnail[0]?.path
+
+    console.log(thumbnailLocalPath)
+    
     const videoLocalPath = await req.files?.videoFile[0]?.path
 
     if (!thumbnailLocalPath || !videoLocalPath) {
@@ -63,7 +66,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
         thumbnail: uploadedThumbnail.url,
         title,
         description,
-        duration: uploadedVideo.duration
+        duration: uploadedVideo.duration,
+        owner: req.user._id
     })
 
     if (!video) {

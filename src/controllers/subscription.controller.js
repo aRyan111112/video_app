@@ -8,6 +8,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 const toggleSubscription = asyncHandler(async (req, res) => {
     // TODO: toggle subscription
+
     const {channelId} = req.params
     const subscriberId = String(req.user._id)
 
@@ -105,6 +106,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
         new ApiResponse(203, channelsSubscribed, "All the channels to which user has subscribed are fetched")
     )
 })
+
 
 export {
     toggleSubscription,
