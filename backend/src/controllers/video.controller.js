@@ -4,12 +4,24 @@ import { Video } from "../models/video.model.js"
 import mongoose from "mongoose"
 import { ApiError } from "../utils/ApiError.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { client } from "../utils/redis.js"
 
 
 // ---------------------Getting all the videos---------------
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, sortBy, sortType } = req.query
     //TODO: get all videos based on query, sort, pagination
+
+    const cacheKey = `videos:p${page}:l${limit}:s${sortBy}:${sortType}`;
+
+    // ✅ Check Redis first
+    const cachedData = await client.get(cacheKey);
+    if (cachedData) {
+        console.log("I ma here ", cachedData)
+        return res.status(200).json(
+            new ApiResponse(200, JSON.parse(cachedData), "videos from cache")
+        );
+    }
 
     const options = {
         page: page,
@@ -24,11 +36,18 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 isPublished: true
             }
         },
-    ], options).then((result) => {
+    ], options).then( async (videos) => {
+
+        // ✅ Save in Redis cache for 10 minutes
+        await client.set(cacheKey, JSON.stringify(videos), { EX: 600 });
+        console.log("Done")
+
         return res.status(200).json(
-            new ApiResponse(202, result, "videos fetched successfully")
-        )
-    }). catch(() => {
+            new ApiResponse(202, videos, "videos fetched successfully")
+        );
+
+    }). catch((error) => {
+        console.log(error);
         throw new ApiError(400, "Could not get videos")
     })
 })
@@ -73,6 +92,13 @@ const publishAVideo = asyncHandler(async (req, res) => {
     if (!video) {
         throw new ApiError(500, "Sorry! video was not uploaded due to some technical reasons")
     }
+
+    await client.del("videos:*")
+    .then(() => {
+        console.log("🗑 Redis cache cleared!")
+
+    });
+
 
     return res.status(200).json(
         new ApiResponse(200, video, "Video uploaded successfully")
@@ -133,6 +159,12 @@ const updateVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Video cannot be found")
     }
 
+    await client.del("videos:*")
+    .then(() => {
+        console.log("🗑 Redis cache cleared!")
+
+    });
+
     return res.status(200).json(
         new ApiResponse(200, video, "Video updated successfully")
     )
@@ -152,6 +184,12 @@ const deleteVideo = asyncHandler(async (req, res) => {
     // if(!video) {
     //     throw new ApiError(400, "video was not found")
     // }
+
+    await client.del("videos:*")
+    .then(() => {
+        console.log("🗑 Redis cache cleared!")
+
+    });
 
     return res.status(200).json(
         new ApiResponse(200, "video was deleted successfully")
@@ -175,6 +213,13 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     }], {
         new: true
     })
+
+    await client.del("videos:*")
+    .then(() => {
+        console.log("🗑 Redis cache cleared!")
+
+    });
+
 
     return res.status(200).json(
         new ApiResponse(200, togglepublish, "publish status changed")
