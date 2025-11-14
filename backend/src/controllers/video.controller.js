@@ -5,6 +5,7 @@ import mongoose from "mongoose"
 import { ApiError } from "../utils/ApiError.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { client } from "../utils/redis.js"
+import { User } from "../models/user.model.js"
 
 
 // ---------------------Getting all the videos---------------
@@ -226,7 +227,40 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     )
 })
 
-export { getAllVideos, publishAVideo, getVideoById, updateVideo, deleteVideo, togglePublishStatus };
+// -----------------------add to watch history----------------------------
+const addToWatchHistory = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;   // video user clicked on
+    const userId = req.user._id;
+
+    if (!videoId) {
+        throw new ApiError(400, "Video ID is required");
+    }
+
+    // Check if video exists
+    const video = await Video.findById(videoId);
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    // Remove existing entry (avoid duplicates)
+    await User.updateOne(
+        { _id: userId },
+        { $pull: { watchHistory: videoId } }
+    );
+
+    // Add new entry at the START of array
+    await User.updateOne(
+        { _id: userId },
+        { $push: { watchHistory: { $each: [videoId], $position: 0 } } }
+    );
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, {}, "Video added to watch history"));
+});
+
+
+export { getAllVideos, publishAVideo, getVideoById, updateVideo, deleteVideo, togglePublishStatus, addToWatchHistory };
 
 
 
