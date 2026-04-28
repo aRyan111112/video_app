@@ -56,9 +56,15 @@ const getPlaylistById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "You need to provide playlistId")
     }
     
-    const playlist = await Playlist.findById({
-        _id: playlistId
-    })
+    const playlist = await Playlist.findById(playlistId)
+        .populate({
+            path: 'videos',
+            populate: {
+                path: 'owner',
+                select: 'fullName username avatar'
+            }
+        })
+        .populate('owner', 'fullName username avatar');
 
     res.status(200).json(
         new ApiResponse(205, playlist, "playlist feched")

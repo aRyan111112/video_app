@@ -10,47 +10,78 @@ import { User } from "../models/user.model.js"
 
 // ---------------------Getting all the videos---------------
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, sortBy, sortType } = req.query
-    //TODO: get all videos based on query, sort, pagination
-
-    const cacheKey = `videos:p${page}:l${limit}:s${sortBy}:${sortType}`;
+    const { page = 1, limit = 10, sortBy = 'createdAt', sortType = 'desc', userId, query } = req.query
+    
+    const cacheKey = `videos:p${page}:l${limit}:s${sortBy}:${sortType}:u${userId || 'all'}:q${query || 'none'}`;
 
     // ✅ Check Redis first
     const cachedData = await client.get(cacheKey);
     if (cachedData) {
-        console.log("I ma here ", cachedData)
         return res.status(200).json(
             new ApiResponse(200, JSON.parse(cachedData), "videos from cache")
         );
     }
 
-    const options = {
-        page: page,
-        limit: limit,
-        // sort: { views: -1 }
-        sort: {[sortBy]: sortType }
+    const matchStage = { isPublished: true };
+    if (userId) {
+        matchStage.owner = new mongoose.Types.ObjectId(userId);
     }
 
-    const videos = await Video.aggregatePaginate([
+    if (query) {
+        matchStage.$or = [
+            { title: { $regex: query, $options: 'i' } },
+            { description: { $regex: query, $options: 'i' } }
+        ];
+    }
+
+    const aggregation = Video.aggregate([
         {
-            $match: {
-                isPublished: true
+            $match: matchStage
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            fullName: 1,
+                            username: 1,
+                            avatar: 1
+                        }
+                    }
+                ]
             }
         },
-    ], options).then( async (videos) => {
+        {
+            $addFields: {
+                owner: {
+                    $first: "$owner"
+                }
+            }
+        },
+        {
+            $sort: {
+                [sortBy]: sortType === 'asc' ? 1 : -1
+            }
+        }
+    ]);
 
-        // ✅ Save in Redis cache for 10 minutes
-        await client.set(cacheKey, JSON.stringify(videos), { EX: 600 });
-        console.log("Done")
+    const options = {
+        page: parseInt(page),
+        limit: parseInt(limit),
+    }
 
-        return res.status(200).json(
-            new ApiResponse(202, videos, "videos fetched successfully")
-        );
+    const videos = await Video.aggregatePaginate(aggregation, options);
 
-    }). catch((error) => {
-        console.log(error);
-        throw new ApiError(400, "Could not get videos")
-    })
+    // ✅ Save in Redis cache for 1 minute (reduced from 10m for better view count sync)
+    await client.set(cacheKey, JSON.stringify(videos), { EX: 60 });
+
+    return res.status(200).json(
+        new ApiResponse(200, videos, "videos fetched successfully")
+    );
 })
 
 // -----------------------Publishing a video------------------------------
@@ -116,7 +147,17 @@ const getVideoById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "videoId is required")
     }
 
-    const video = await Video.findById(videoId)
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $inc: {
+                views: 1
+            }
+        },
+        {
+            new: true
+        }
+    ).populate('owner', 'fullName username avatar')
 
     if (!video) {
         throw new ApiError(400, "Video is not available")

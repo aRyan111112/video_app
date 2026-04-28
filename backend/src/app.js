@@ -27,7 +27,7 @@ import healthcheckRouter from "./routes/healthcheck.routes.js"
 
 // routes declaration
 app.use("/api/v1/users", userRouter)
-app.use("/api/video", videoRouter)
+app.use("/api/v1/video", videoRouter)
 app.use("/api/v1/likes", likeRouter)
 app.use("/api/v1/comments", commentRouter)
 app.use("/api/v1/subscriptions", subscriptionRouter)
@@ -35,5 +35,18 @@ app.use("/api/v1/playlist", playlistRouter)
 app.use("/api/v1/tweets", tweetRouter)
 app.use("/api/v1/dashboard", dashboardRouter)
 app.use("/api/v1/healthcheck", healthcheckRouter)
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    
+    return res.status(statusCode).json({
+        success: false,
+        message,
+        errors: err.errors || [],
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined
+    });
+});
 
 export { app }

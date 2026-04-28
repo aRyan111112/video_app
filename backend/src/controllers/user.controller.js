@@ -57,7 +57,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
     console.log("works till here")
 
-    const avatarLocalPath = await req.files?.avatar[0]?.path;
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    console.log("DEBUG: req.body: ", req.body)
+    console.log("DEBUG: req.files: ", req.files)
     console.log("avatarLocalPath : ", avatarLocalPath)
 
     if (!avatarLocalPath) {
@@ -370,9 +372,9 @@ const getChannelProfile = asyncHandler(async (req, res) => {
                 channelIsSubscribedToCount: {
                     $size: "$subscribedTo"
                 },
-                isSubcribed: {
+                isSubscribed: {
                     $cond: {
-                        if: {$in: [req.user?._id, "$subscribers.subscriber"]},
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
                         then: true,
                         else: false
                     }
@@ -381,7 +383,9 @@ const getChannelProfile = asyncHandler(async (req, res) => {
         },
         {
             $project: {
+                _id: 1,
                 username: 1,
+                fullName: 1,
                 subscribersCount: 1,
                 channelIsSubscribedToCount: 1,
                 isSubscribed: 1,

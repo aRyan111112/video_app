@@ -1,0 +1,105 @@
+# ============================================================
+# VidStream – Root .gitignore
+# ============================================================
+
+# ─── Dependencies ───────────────────────────────────────────
+node_modules/
+jspm_packages/
+web_modules/
+bower_components/
+
+# ─── Build outputs ──────────────────────────────────────────
+dist/
+dist-ssr/
+build/
+build/Release
+out/
+
+# ─── Environment / secrets ──────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── Logs ───────────────────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ─── Runtime / OS artefacts ─────────────────────────────────
+pids/
+*.pid
+*.seed
+*.pid.lock
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Caches ─────────────────────────────────────────────────
+.cache/
+.parcel-cache/
+.npm/
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.fusebox/
+.webpack/
+
+# ─── Test / coverage ────────────────────────────────────────
+coverage/
+*.lcov
+.nyc_output/
+.grunt/
+
+# ─── TypeScript ─────────────────────────────────────────────
+*.tsbuildinfo
+
+# ─── Diagnostic reports ─────────────────────────────────────
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# ─── Package manager files ──────────────────────────────────
+*.tgz
+.yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+.lock-wscript
+.node_repl_history
+
+# ─── Framework outputs ──────────────────────────────────────
+.next/
+.nuxt/
+.svelte-kit/
+.vuepress/dist
+.docusaurus/
+.temp/
+
+# ─── Serverless / cloud ─────────────────────────────────────
+.serverless/
+.dynamodb/
+
+# ─── Editor / IDE ───────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.local
+.tern-port
+.vscode-test
+
+# ─── Misc ───────────────────────────────────────────────────
+lib-cov/

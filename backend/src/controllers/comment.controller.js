@@ -18,8 +18,36 @@ const getVideoComments = asyncHandler(async (req, res) => {
         const commentsOnVideo = await Comment.aggregatePaginate([
             {
                 $match: {
-                    video: videoId,
-                    owner: req.user._id
+                    video: new mongoose.Types.ObjectId(videoId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "owner",
+                    foreignField: "_id",
+                    as: "owner",
+                    pipeline: [
+                        {
+                            $project: {
+                                fullName: 1,
+                                username: 1,
+                                avatar: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $addFields: {
+                    owner: {
+                        $first: "$owner"
+                    }
+                }
+            },
+            {
+                $sort: {
+                    createdAt: -1
                 }
             }
         ], options)
