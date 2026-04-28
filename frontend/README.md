@@ -1,16 +1,63 @@
-# React + Vite
+# VidStream Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for the VidStream video streaming platform.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19** — UI framework
+- **Vite** — Build tool & HMR dev server
+- **React Router DOM v7** — Client-side routing
+- **Axios** — HTTP client with interceptors
+- **Tailwind CSS** — Utility-first styling
+- **React Icons** — Icon library
 
-## React Compiler
+## Pages
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Page | Route |
+|---|---|
+| Home | `/` |
+| Watch Video | `/watch/:videoId` |
+| Search | `/search` |
+| Channel Profile | `/channel/:username` |
+| Upload Video | `/upload` |
+| Library | `/library` |
+| History | `/history` |
+| Liked Videos | `/liked` |
+| Subscriptions | `/subscriptions` |
+| Playlist | `/playlist/:playlistId` |
+| Dashboard | `/dashboard` |
+| Login | `/login` |
+| Register | `/register` |
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```sh
+npm install
+npm run dev
+```
+
+Create a `.env` file:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+## Project Structure
+
+```
+src/
+├── api/          # Axios instance & base config
+├── components/   # Navbar, Sidebar, VideoCard, Comments, etc.
+├── context/      # AuthContext (global auth state)
+├── pages/        # One file per route/page
+└── main.jsx      # App entry point & router setup
+```
+
+## Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |
